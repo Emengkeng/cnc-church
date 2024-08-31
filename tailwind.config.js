@@ -12,6 +12,9 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['var(--font-montserrat)']
+      },
+      colors: {
+        gold: '#FFD700',
       }
     },
   },

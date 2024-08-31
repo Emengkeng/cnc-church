@@ -1,10 +1,19 @@
 "use client";
 
-import Chart from "chart.js/auto";
-import { Line } from "react-chartjs-2";
-import { CategoryScale } from "chart.js";
-Chart.register(CategoryScale);
-Chart.defaults.scale.grid.display = false;
+import React, { useState, useEffect, ReactNode } from 'react';
+import { Line } from 'react-chartjs-2';
+import { ArrowUpIcon, ArrowDownIcon } from 'lucide-react';
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  ChartOptions 
+} from 'chart.js';
 import {
   getDocs,
   collection,
@@ -14,282 +23,295 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useEffect, useState } from "react";
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Card Component Types
+interface CardProps {
+  children: ReactNode;
+  className?: string;
+  [x: string]: any;
+}
+
+function Card({ children, className, ...props }: CardProps) {
+  return (
+    <div className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`} {...props}>
+      {children}
+    </div>
+  );
+}
+
+function CardHeader({ children, className, ...props }: CardProps) {
+  return (
+    <div className={`px-6 py-4 border-b border-gray-200 ${className}`} {...props}>
+      {children}
+    </div>
+  );
+}
+
+function CardContent({ children, className, ...props }: CardProps) {
+  return (
+    <div className={`px-6 py-4 ${className}`} {...props}>
+      {children}
+    </div>
+  );
+}
+
+interface ChurchData {
+  members: number[];
+  offering: number[];
+  contribution: number[];
+  tithe: number[];
+}
+
+type DataKey = keyof ChurchData;
+
+interface DataItem {
+  date: Timestamp;
+  amount?: number;
+  count?: number;
+  id: string;
+}
+
+
 
 export default function Dashboard() {
-  // let growthYear = 2023;
-  const [growthYear, setGrowthYear] = useState<any>(
-    new Date().getFullYear().toString()
-  );
+  const [loading, setLoading] = useState<boolean>(true);
+  const [growthYear, setGrowthYear] = useState<string>(new Date().getFullYear().toString());
+  const [memberCount, setMemberCount] = useState<number>(0);
+  const [offeringCount, setOfferingCount] = useState<number>(0);
+  const [contributionCount, setContributionCount] = useState<number>(0);
+  const [titheCount, setTitheCount] = useState<number>(0);
+  const [churchData, setChurchData] = useState<ChurchData>({
+    members: [],
+    offering: [],
+    contribution: [],
+    tithe: []
+  });
+  const [selectedDataType, setSelectedDataType] = useState<DataKey>('members');
 
-  const labels = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const [members, setMembers] = useState<any>(null);
-  const data = {
-    labels: labels,
-    datasets: [
-      {
-        label: `Membership growth for ${growthYear}`,
-        backgroundColor: "rgb(74, 90, 234)",
-        borderColor: "rgb(74, 90, 234)",
-        data: members,
-        fill: false,
-      },
-    ],
+  const formatXAF = (value: number): string => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XAF' }).format(value);
   };
-  const [memberCount, setMemberCount] = useState<any>(null);
-  const [departmentCount, setDepartmentCount] = useState<any>(null);
-  const [offeringCount, setOfferingCount] = useState<any>(null);
-  const [contributionCount, setContributionCount] = useState<any>(null);
-  const [offeringDate, setOfferingDate] = useState<any>(null);
-  const [titheCount, setTitheCount] = useState<any>(null);
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const currMonth = new Date().getMonth();
-  const currYear = new Date().getFullYear();
-
-  async function getMembers() {
-    const monthSum: any = {
-      January: 0,
-      February: 0,
-      March: 0,
-      April: 0,
-      May: 0,
-      June: 0,
-      July: 0,
-      August: 0,
-      September: 0,
-      October: 0,
-      November: 0,
-      December: 0,
-    };
-    const dptCount: any = {
-      "Men Ministry": 0,
-      "Women Ministry": 0,
-      "Youth Ministry": 0,
-      "Children Ministry": 0,
-    };
-    const memberRef = collection(db, "members");
-    const snapshots = await getDocs(memberRef).then((snapshots) => {
-      setMemberCount(snapshots.docs.length);
-      snapshots.docs.map((doc) => {
-        const data = doc.data();
-        let dpt = data.department;
-        dptCount[dpt] = dptCount[dpt] + 1;
-
-        let dateOfFirstVisit = new Date(data.dateOfFirstVisit);
-        let yearOfFistVisit = dateOfFirstVisit.getFullYear().toString();
-        let monthOfFirstVisit = monthNames[dateOfFirstVisit.getMonth()];
-        console.log("year of first visit", yearOfFistVisit);
-        console.log("month of first visit", monthOfFirstVisit);
-        if (yearOfFistVisit == growthYear) {
-          monthSum[monthOfFirstVisit] = monthSum[monthOfFirstVisit] + 1;
-        }
-      });
-    });
-    // setMembers([5,10,20,20, 30, 40, 50, 60, 50, 40 , 20, 20])
-    setMembers(Object.values(monthSum).slice(0, currMonth + 1));
-    console.log(monthSum);
-    console.log(Object.values(monthSum).slice(0, currMonth + 1));
-    setDepartmentCount(dptCount);
-  }
-
-  function generateYears() {
-    let years = [];
-    for (let year = 2018; year <= 2030; year++) {
-      years.push(year);
-    }
-    return years;
-  }
-
-  let selectYear = generateYears();
-
-  async function getOffering() {
-    let offeringSum: number = 0;
-    const offeringRef = collection(db, "offering");
-    const offeringRefQuery = query(offeringRef, orderBy("date", "desc"));
-    const count = 0;
-    const snapshots = await getDocs(offeringRefQuery).then((snapshots) => {
-      const offeringDocs = snapshots.docs.map((doc) => {
-        const data = doc.data();
-        let offeringDate = new Date(data.date);
-        let offeringYear = offeringDate.getFullYear();
-
-        if (offeringYear == currYear) {
-          offeringSum = offeringSum + data.amount;
-        }
-        return data;
-      });
-      setOfferingCount(offeringSum);
-    });
-  }
-
-  async function getContribution() {
-    let contributionSumForTheYear: number = 0;
-    const contributionRef = collection(db, "contribution");
-    const snapshots = await getDocs(contributionRef).then((snapshots) => {
-      snapshots.docs.map((doc) => {
-        const data = doc.data();
-
-        let contributionDate = new Date(data.date);
-        let contributionYear = contributionDate.getFullYear();
-
-        if (contributionYear == currYear) {
-          contributionSumForTheYear = contributionSumForTheYear + data.amount;
-        }
-      });
-      setContributionCount(contributionSumForTheYear);
-      // console.log('contribution sum for the year', contributionSumForTheYear)
-    });
-  }
-
-  async function getTithe() {
-    let titheSum: number = 0;
-    const titheRef = collection(db, "tithe");
-    const titheRefQuery = query(titheRef, orderBy("dateAdded", "desc"));
-    const snapshots = await getDocs(titheRefQuery).then((snapshots) => {
-      const docs = snapshots.docs.map((doc) => {
-        const data = doc.data();
-        data.id = doc.id;
-
-        let titheDate = new Date(data.date);
-        let titheYear = titheDate.getFullYear();
-
-        if (titheYear == currYear) {
-          titheSum = titheSum + data.amount;
-        }
-      });
-
-      setTitheCount(titheSum);
-    });
-  }
-
-  const row1content = [
-    {
-      title: "total members",
-      figure: memberCount || memberCount == 0 ? memberCount : "loading",
-    },
-    {
-      title: `offetory ${currYear}`,
-      figure:
-        offeringCount || offeringCount == 0
-          ? `XAF ${offeringCount}`
-          : "loading",
-    },
-    {
-      title: `project ${currYear}`,
-      figure:
-        contributionCount || contributionCount == 0
-          ? `XAF ${contributionCount}`
-          : "loading",
-    },
-    {
-      title: "tithe",
-      figure: titheCount || titheCount == 0 ? `XAF ${titheCount}` : "loading",
-    },
-  ];
-  const col1content = [
-    {
-      title: "Men Ministry",
-      figure: departmentCount ? departmentCount["Men Ministry"] : "loading",
-    },
-    {
-      title: "Women Ministry",
-      figure: departmentCount ? departmentCount["Women Ministry"] : "loading",
-    },
-    {
-      title: "Youth Ministry",
-      figure: departmentCount ? departmentCount["Youth Ministry"] : "loading",
-    },
-    {
-      title: "Children ministry",
-      figure: departmentCount
-        ? departmentCount["Children Ministry"]
-        : "loading",
-    },
-  ];
 
   useEffect(() => {
-    getMembers();
-    getOffering();
-    getContribution();
-    getTithe();
-  }, [growthYear]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const startDate = `${growthYear}-01-01`;
+        const endDate = `${growthYear}-12-31`;
+  
+        const collections: DataKey[] = ['members', 'offering', 'contribution', 'tithe'];
+        const fetchPromises = collections.map(async (collectionName) => {
+          const q = query(
+            collection(db, collectionName),
+            where('date', '>=', startDate),
+            where('date', '<=', endDate),
+            orderBy('date')
+          );
+          const querySnapshot = await getDocs(q);
+  
+          console.log(`Data for ${collectionName}:`, querySnapshot.docs.map(doc => doc.data()));
+  
+          return { 
+            collectionName, 
+            data: querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as unknown as DataItem))
+          };
+        });
+  
+        const results = await Promise.all(fetchPromises);
+  
+        const newChurchData: ChurchData = {
+          members: new Array(12).fill(0),
+          offering: new Array(12).fill(0),
+          contribution: new Array(12).fill(0),
+          tithe: new Array(12).fill(0)
+        };
+  
+        results.forEach(({ collectionName, data }) => {
+          data.forEach((item: DataItem) => {
+            let dateObject: Date;
+        
+            if (item.date instanceof Timestamp) {
+              // Convert Firestore Timestamp to JavaScript Date
+              dateObject = item.date.toDate();
+            } else {
+              // Parse the date string (assumes the date is a string in "YYYY-MM-DD" format)
+              dateObject = new Date(item.date as unknown as string);
+            }
+        
+            const month = dateObject.getMonth(); // Get month index (0-11)
+        
+            if (collectionName === 'members' && item.count !== undefined) {
+              newChurchData[collectionName][month] = item.count;
+            } else if (item.amount !== undefined) {
+              newChurchData[collectionName][month] += item.amount;
+            }
+          });
+        });
+        
+        console.log('Church Data:', newChurchData);
+        setChurchData(newChurchData);
+        const totalMembers = setMemberCount(newChurchData.members[newChurchData.members.length - 1]);
+        const totalOffering = setOfferingCount(newChurchData.offering.reduce((a, b) => a + b, 0));
+        const totalContribution = setContributionCount(newChurchData.contribution.reduce((a, b) => a + b, 0));
+        const totalTithe = setTitheCount(newChurchData.tithe.reduce((a, b) => a + b, 0));
 
-  // useEffect(() => {}, []);
+        console.log('Total Members:', totalMembers);
+        console.log('Total Offering:', totalOffering);
+        console.log('Total Contribution:', totalContribution);
+        console.log('Total Tithe:', totalTithe);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [growthYear]);
+  
+  
+
+  const chartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value) => selectedDataType === 'members' ? value : formatXAF(value as number)
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: `${selectedDataType.charAt(0).toUpperCase() + selectedDataType.slice(1)} Overview ${growthYear}`,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed.y !== null) {
+              label += selectedDataType === 'members' 
+                ? context.parsed.y
+                : formatXAF(context.parsed.y);
+            }
+            return label;
+          }
+        }
+      }
+    },
+  };
+
+  const summaryCards = [
+    { title: 'Total Members', value: memberCount, change: '+5%', color: 'bg-blue-500' },
+    { title: `Offering ${growthYear}`, value: formatXAF(offeringCount), change: '+5%', color: 'bg-green-500' },
+    { title: `Contribution ${growthYear}`, value: formatXAF(contributionCount), change: '-3%', color: 'bg-red-500' },
+    { title: 'Tithe', value: formatXAF(titheCount), change: '', color: 'bg-purple-500' },
+  ];
+
+  const chartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        label: selectedDataType.charAt(0).toUpperCase() + selectedDataType.slice(1),
+        data: churchData[selectedDataType],
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+      }
+    ]
+  };
 
   return (
-    <main
-      className={`font-sans h-screen w-screen flex flex-col md:px-40 lg:px-40 `}
-    >
-      <div className="flex flex-row justify-between flex-wrap">
-        {row1content.map((content, index) => (
-          <div
-            key={index}
-            className="p-3 bg-gradient-to-r from-[#6E45E2] to-[#88D3CE] rounded-lg text-white my-5 w-screen md:w-auto lg:w-auto m-10"
-          >
-            <div className="flex flex-col md:items-center lg:items-center md:mx-10 lg:mx-10 my-4 md:my-0 lg:my-0">
-              <span className="font-bold text-lg my-4"> {content.figure} </span>
-              <span className="text-sm mt-4">{content.title} </span>
-            </div>
+    <div className="p-6 bg-gray-100 min-h-screen">
+      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+  
+      {loading ? (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-blue-600" role="status">
+            <span className="sr-only">Loading...</span>
           </div>
-        ))}
-      </div>
-      <div className="flex flex-row justify-center md:mt-10 lg:mt-10 flex-wrap">
-        <div className="flex flex-col w-[100vh] md:h-96 lg-h-96 bg-col m-10 md:m-0 lg:m-0">
-          {/* w-3/4 */}
-          <span className="font-bold mb-10">{`Membership growth for ${growthYear}`}</span>
-          {/* <label>Select year</label> */}
-          <select
-            className="border rounded w-[65px]"
-            name="selectYear"
-            value={growthYear}
-            onChange={(e) => setGrowthYear(e.target.value)}
-          >
-            {selectYear.map((yr, idx) => (
-              <option key={idx} value={yr}>
-                {yr}
-              </option>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            {summaryCards.map((card, index) => (
+              <Card key={index} className={`${card.color} text-blcak`}>
+                <CardHeader className="font-semibold">{card.title}</CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{card.value}</div>
+                  {/**
+                  {card.change.startsWith('+') ? (
+                    <div className="flex items-center text-green-500">
+                      <ArrowUpIcon className="w-4 h-4 mr-1" />
+                      {card.change}
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-red-500">
+                      <ArrowDownIcon className="w-4 h-4 mr-1" />
+                      {card.change}
+                    </div>
+                  )} */}
+                </CardContent>
+              </Card>
             ))}
-          </select>
-          <Line data={data} />
-        </div>
-        <div className="flex flex-col items-center self-end h-full pt-10 md:ml-auto lg:ml-auto">
-          {col1content.map((content, index) => (
-            <div key={index} className="flex flex-col items-center">
-              <span className="font-bold text-lg"> {content.figure} </span>
-              <span className="text-sm m-4">{content.title} </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+          </div>
+  
+          <Card className="mb-6">
+            <CardHeader className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Data Overview</h2>
+              <div className="flex space-x-2">
+                <select
+                  className="border rounded p-1"
+                  value={selectedDataType}
+                  onChange={(e) => setSelectedDataType(e.target.value as DataKey)}
+                >
+                  <option value="members">Members</option>
+                  <option value="offering">Offering</option>
+                  <option value="contribution">Contribution</option>
+                  <option value="tithe">Tithe</option>
+                </select>
+                <select
+                  className="border rounded p-1"
+                  value={growthYear}
+                  onChange={(e) => setGrowthYear(e.target.value)}
+                >
+                  {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map((year) => (
+                    <option key={year} value={year.toString()}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-80">
+                <Line data={chartData} options={chartOptions} />
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+    </div>
+  );  
 }
