@@ -165,8 +165,8 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
 
   return (
     // <div className="w-[50%] rounded border p-5 h-[100vh] overflow-auto text-sm">
-    <form className="flex flex-col space-y-4" onSubmit={submitHandler}>
-      <div className="flex flex-col items-center">
+    <form className="flex flex-col space-y-4 p-4 max-w-lg mx-auto" onSubmit={submitHandler}>
+      <div className="flex flex-col items-center mb-4">
         <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
           {previewUrl ? (
             <img src={previewUrl} alt="Profile preview" className="w-full h-full object-cover" />
@@ -192,9 +192,9 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
         </button>
       </div>
 
-      <div className="flex flex-row justify-between my-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex flex-col">
-          <label>Welfare No.</label>
+          <label className="mb-1">Welfare No.</label>
           <input
             className="border p-2 rounded"
             name="welfare"
@@ -204,7 +204,7 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
           />
         </div>
         <div className="flex flex-col">
-          <label>Last Name</label>
+          <label className="mb-1">Last Name</label>
           <input
             className="border p-2 rounded"
             name="lastName"
@@ -214,11 +214,8 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
             required
           />
         </div>
-      </div>
-
-      <div className="flex flex-row justify-between my-5">
         <div className="flex flex-col">
-          <label>Other Names</label>
+          <label className="mb-1">Other Names</label>
           <input
             className="border p-2 rounded"
             name="otherNames"
@@ -229,7 +226,7 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
           />
         </div>
         <div className="flex flex-col">
-          <label>Address</label>
+          <label className="mb-1">Address</label>
           <input
             className="border p-2 rounded"
             name="address"
@@ -239,13 +236,10 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
             required
           />
         </div>
-      </div>
-
-      <div className="flex flex-row justify-between my-5">
         <div className="flex flex-col">
-          <label>Sex</label>
+          <label className="mb-1">Sex</label>
           <select
-            className="border p-2 rounded w-[190px]"
+            className="border p-2 rounded"
             name="sex"
             value={sex}
             onChange={(e) => setSex(e.target.value)}
@@ -255,8 +249,8 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
             <option value="Female">Female</option>
           </select>
         </div>
-        <div className="flex flex-col w-[190px]">
-          <label>Date of Birth</label>
+        <div className="flex flex-col">
+          <label className="mb-1">Date of Birth</label>
           <input
             className="border p-2 rounded"
             name="dateOfBirth"
@@ -558,7 +552,7 @@ export default function AddMember({ data, onClose }: { data: any; onClose: () =>
         </div>
       )}
 
-<div className="flex justify-end space-x-2">
+      <div className="flex justify-end space-x-2 mt-6">
         <button
           type="button"
           onClick={onClose}
