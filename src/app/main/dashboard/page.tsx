@@ -200,19 +200,19 @@ export default function Dashboard() {
       title: `offetory ${currYear}`,
       figure:
         offeringCount || offeringCount == 0
-          ? `GHS ${offeringCount}`
+          ? `XAF ${offeringCount}`
           : "loading",
     },
     {
       title: `project ${currYear}`,
       figure:
         contributionCount || contributionCount == 0
-          ? `GHS ${contributionCount}`
+          ? `XAF ${contributionCount}`
           : "loading",
     },
     {
       title: "tithe",
-      figure: titheCount || titheCount == 0 ? `GHS ${titheCount}` : "loading",
+      figure: titheCount || titheCount == 0 ? `XAF ${titheCount}` : "loading",
     },
   ];
   const col1content = [
