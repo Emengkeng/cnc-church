@@ -51,9 +51,9 @@ export default function NavBar() {
             <Image
               className="h-8 w-auto"
               src="/images/logo.png"
-              alt="Calvary Worship Center"
-              width={32}
-              height={32}
+              alt="Concencrated Nation Church"
+              width={1000}
+              height={1000}
             />
             <span className="ml-2 font-bold text-gold hidden md:block">
               Concencrated Nation Church

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { storage } from "@/lib/firebase";
@@ -9,76 +9,97 @@ import {
   deleteObject,
 } from "firebase/storage";
 
-export default function AddMember(props: any) {
+export default function AddMember({ data, onClose }: { data: any; onClose: () => void }) {
   let edit: boolean;
 
-  if (props.data.lastName) {
+  if (data.lastName) {
     edit = true;
   } else {
     edit = false;
   }
 
   console.log(edit);
-  console.log("edit data", props.data);
+  console.log("edit data", data);
 
-  const [profile, setProfile] = useState<any>(null);
-  const [welfare, setWelfare] = useState(props.data.welfare);
-  const [lastName, setLastName] = useState(props.data.lastName);
-  const [otherNames, setOtherNames] = useState(props.data.otherNames);
-  const [address, setAddress] = useState(props.data.address);
-  const [sex, setSex] = useState(props.data.sex);
-  const [dateOfBirth, setDateOfBirth] = useState(props.data.dateOfBirth);
-  const [nationality, setNationality] = useState(props.data.nationality);
-  const [occupation, setOccupation] = useState(props.data.occupation);
-  const [phone, setPhone] = useState(props.data.phone);
-  const [hometown, setHometown] = useState(props.data.hometown);
-  const [region, setRegion] = useState(props.data.region);
-  const [residence, setResidence] = useState(props.data.residence);
-  const [maritalStatus, setMaritalStatus] = useState(props.data.maritalStatus);
-  const [department, setDepartment] = useState(props.data.department);
-  const [spouseName, setSpouseName] = useState(props.data.spouseName);
-  const [fatherName, setFatherName] = useState(props.data.fatherName);
-  const [motherName, setMotherName] = useState(props.data.motherName);
-  const [childrenName, setChildrenName] = useState(props.data.childrenName);
-  const [nextOfKin, setNextOfKin] = useState(props.data.nextOfKin);
+  const [profile, setProfile] = useState<File | null>(null);  
+  const [previewUrl, setPreviewUrl] = useState<string | null>(data.imageUrl || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [welfare, setWelfare] = useState(data.welfare);
+  const [lastName, setLastName] = useState(data.lastName);
+  const [otherNames, setOtherNames] = useState(data.otherNames);
+  const [address, setAddress] = useState(data.address);
+  const [sex, setSex] = useState(data.sex);
+  const [dateOfBirth, setDateOfBirth] = useState(data.dateOfBirth);
+  const [nationality, setNationality] = useState(data.nationality);
+  const [occupation, setOccupation] = useState(data.occupation);
+  const [phone, setPhone] = useState(data.phone);
+  const [imageUrl, setImageUrl] = useState(data.imageUrl);
+  const [hometown, setHometown] = useState(data.hometown);
+  const [region, setRegion] = useState(data.region);
+  const [residence, setResidence] = useState(data.residence);
+  const [maritalStatus, setMaritalStatus] = useState(data.maritalStatus);
+  const [department, setDepartment] = useState(data.department);
+  const [spouseName, setSpouseName] = useState(data.spouseName);
+  const [fatherName, setFatherName] = useState(data.fatherName);
+  const [motherName, setMotherName] = useState(data.motherName);
+  const [childrenName, setChildrenName] = useState(data.childrenName);
+  const [nextOfKin, setNextOfKin] = useState(data.nextOfKin);
   const [nextOfKinPhone, setNextOfKinPhone] = useState(
-    props.data.nextOfKinPhone
+    data.nextOfKinPhone
   );
-  const [declaration, setDeclaration] = useState(props.data.declaration);
+  const [declaration, setDeclaration] = useState(data.declaration);
   const [dateOfFirstVisit, setDateOfFirstVisit] = useState(
-    props.data.dateOfFirstVisit
+    data.dateOfFirstVisit
   );
-  const [dateOfBaptism, setDateOfBaptism] = useState(props.data.dateOfBaptism);
-  const [membership, setMembership] = useState(props.data.membership);
+  const [dateOfBaptism, setDateOfBaptism] = useState(data.dateOfBaptism);
+  const [membership, setMembership] = useState(data.membership);
   const [dateOfTransfer, setDateOfTransfer] = useState(
-    props.data.dateOfTransfer
+    data.dateOfTransfer
   );
   const [officerInCharge, setOfficerInCharge] = useState(
-    props.data.officerInCharge
+    data.officerInCharge
   );
   const [officerSignatureDate, setOfficerSignatureDate] = useState(
-    props.data.officerSignatureDate
+    data.officerSignatureDate
   );
   const [headPastorSignatureDate, setHeadPastorSignatureDate] = useState(
-    props.data.headPastorSignatureDate
+    data.headPastorSignatureDate
   );
-  const [status, setStatus] = useState(props.data.status);
+  const [status, setStatus] = useState(data.status);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
   function setFiles(e: any) {
     setProfile(e.target.files[0]);
   }
 
-  function submitHandler(e: any) {
+  async function submitHandler(e: React.FormEvent) {
     e.preventDefault();
-    let data: any = {
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    const memberData = {
       welfare: welfare,
       lastName: lastName,
       otherNames: otherNames,
       address: address,
       sex: sex,
+      imageUrl: imageUrl,
       dateOfBirth: dateOfBirth,
       nationality: nationality,
       occupation: occupation,
@@ -106,189 +127,71 @@ export default function AddMember(props: any) {
       dateAdded: new Date(),
     };
 
-    console.log(data);
+    console.log(memberData);
 
-    const dbRef = collection(db, "members");
+    try {
+      let imageUrl = data.imageUrl;
 
-    function uploadActivity() {
-      try {
-        const activityRef = collection(db, "activity");
-        const owner: string | null = localStorage.getItem("userEmail");
-        var date = new Date();
-        var options: any = { hour: "numeric", minute: "2-digit" };
-        let currTime = date.toLocaleTimeString("en-US", options);
-        let activity = "edit" ? "Edit" : "Add";
-        addDoc(activityRef, {
-          resource: "Member",
-          activity: activity,
-          owner: owner?.toString(),
-          date: new Date(),
-          time: currTime,
-        })
-          .then(() => {
-            setError("");
-            setSuccess("Success");
-            window.location.reload();
-          })
-          .catch((error) => {
-            console.log(error);
-            setSuccess("");
-            setError("Something went wrong");
-          });
-      } catch (error) {
-        console.log(error);
-        setSuccess("");
-        setError("Something went wrong");
-      }
-    }
+      if (profile) {
+        const imageRef = ref(storage, `images/${welfare}-${lastName}-${otherNames}-${Date.now()}`);
+        await uploadBytes(imageRef, profile);
+        imageUrl = await getDownloadURL(imageRef);
 
-    if (!edit) {
-      try {
-        console.log(profile);
-        const imageRef = ref(
-          storage,
-          `images/${welfare}-${lastName}-${otherNames}-${Date.now()}`
-        );
-        uploadBytes(imageRef, profile)
-          .then((res) => {
-            getDownloadURL(imageRef).then((url) => {
-              const imageUrl: string = url;
-              try {
-                data.imageUrl = imageUrl;
-                addDoc(dbRef, data)
-                  .then((docRef) => {
-                    console.log(docRef);
-                    console.log(docRef.id);
-                    uploadActivity();
-                  })
-                  .catch((error) => {
-                    console.log(error);
-                    setSuccess("");
-                    setError("Something went wrong");
-                  });
-              } catch (e) {
-                console.log(e);
-                setSuccess("");
-                setError("Something went wrong");
-              }
-            });
-          })
-          .catch((err) => {
-            console.log(err);
-            setSuccess("");
-            setError("Something went wrong");
-          });
-      } catch (err) {
-        console.log(err);
-        setSuccess("");
-        setError("Something went wrong");
-      }
-    }
-
-    if (edit) {
-      const docRef = doc(db, "members", props.data.id);
-      if (!profile) {
-        console.log("You are updating the document without a profile");
-        try {
-          data.imageUrl = props.data.imageUrl;
-          setDoc(docRef, data)
-            .then((docRef) => {
-              uploadActivity();
-            })
-            .catch((err) => {
-              console.log(err);
-              setSuccess("");
-              setError("Something went wrong");
-            });
-        } catch (e) {
-          console.log(e);
-          setSuccess("");
-          setError("Something went wrong");
+        if (data.imageUrl) {
+          const oldImageRef = ref(storage, data.imageUrl);
+          await deleteObject(oldImageRef);
         }
+      }
+
+      memberData.imageUrl = imageUrl;
+
+      if (data.id) {
+        await setDoc(doc(db, "members", data.id), memberData);
       } else {
-        try {
-          console.log("You are updating the document with a profile");
-          console.log(profile);
-          const imageRef = ref(
-            storage,
-            `images/${welfare}-${lastName}-${otherNames}-${Date.now()}`
-          );
-          uploadBytes(imageRef, profile)
-            .then((res) => {
-              getDownloadURL(imageRef).then((url) => {
-                const imageUrl: string = url;
-                data.imageUrl = imageUrl;
-
-                try {
-                  setDoc(docRef, data)
-                    .then((docRef) => {
-                      console.log("Document has been updated");
-                      const oldImageRef = ref(storage, props.data.imageUrl);
-                      deleteObject(oldImageRef)
-                        .then((res) => {
-                          console.log(res);
-                          setError("");
-                          setSuccess("Updated successful");
-                          window.location.reload();
-                        })
-                        .catch((err) => {
-                          setSuccess("");
-                          setError("Something went wrong");
-                        });
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                      setSuccess("");
-                      setError("Something went wrong");
-                    });
-                } catch (e) {
-                  console.log(e);
-                  setSuccess("");
-                  setError("Something went wrong");
-                }
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-              setSuccess("");
-              setError("Something went wrong");
-            });
-        } catch (err) {
-          console.log(err);
-          setSuccess("");
-          setError("Something went wrong");
-        }
+        await addDoc(collection(db, "members"), memberData);
       }
+
+      setSuccess("Member successfully saved");
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred while saving the member");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
     // <div className="w-[50%] rounded border p-5 h-[100vh] overflow-auto text-sm">
-    <form
-      className="flex flex-col flex-wrap mt-10 w-auto"
-      onSubmit={submitHandler}
-    >
-      <div className="flex flex-col">
-        <label>Upload Profile Image</label>
-        {edit ? (
-          <input
-            className="border p-2 rounded"
-            name="profile"
-            onChange={setFiles}
-            type="file"
-            accept="image/*"
-          />
-        ) : (
-          <input
-            className="border p-2 rounded"
-            name="profile"
-            onChange={setFiles}
-            type="file"
-            accept="image/*"
-            required
-          />
-        )}
+    <form className="flex flex-col space-y-4" onSubmit={submitHandler}>
+      <div className="flex flex-col items-center">
+        <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
+          {previewUrl ? (
+            <img src={previewUrl} alt="Profile preview" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+              No Image
+            </div>
+          )}
+        </div>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          ref={fileInputRef}
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+        >
+          {previewUrl ? "Change Image" : "Upload Image"}
+        </button>
       </div>
+
       <div className="flex flex-row justify-between my-5">
         <div className="flex flex-col">
           <label>Welfare No.</label>
@@ -645,20 +548,32 @@ export default function AddMember(props: any) {
         </div>
       </div>
 
-      {error || success ? (
+      {(error || success) && (
         <div
-          className={`text-center text-white ${
-            error ? "bg-red-400 border" : ""
-          } ${success ? "bg-green-400 border" : ""} p-2 rounded mb-2`}
+          className={`text-center text-white p-2 rounded ${
+            error ? "bg-red-500" : "bg-green-500"
+          }`}
         >
-          <span>{error && error}</span>
-          <span>{success && success}</span>
+          {error || success}
         </div>
-      ) : null}
+      )}
 
-      <button className="p-2 rounded bg-[#8B7E74] text-white" type="submit">
-        Save
-      </button>
+<div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300"
+        >
+          {isLoading ? "Saving..." : "Save"}
+        </button>
+      </div>
     </form>
     // </div>
   );

@@ -300,7 +300,7 @@ export default function Members() {
       <Transition appear show={isAddMemberOpen} as={Fragment}>
         <Dialog
           as="div"
-          className={`${montserrat.variable} font-sans relative z-10 text-sm`}
+          className="relative z-10 text-sm"
           onClose={closeAddMemberModal}
         >
           <Transition.Child
@@ -326,14 +326,14 @@ export default function Members() {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="transform min-w-[40%] overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-bold leading-6 text-gray-900"
+                    className="text-lg font-bold leading-6 text-gray-900 mb-4"
                   >
                     Membership Form
                   </Dialog.Title>
-                  <AddMember data={viewMemberData} />
+                  <AddMember data={viewMemberData} onClose={closeAddMemberModal} />
                 </Dialog.Panel>
               </Transition.Child>
             </div>
@@ -408,11 +408,11 @@ export default function Members() {
         </Dialog>
       </Transition>
 
-      <div className="flex flex-row justify-between flex-wrap">
+      <div className="flex flex-row justify-between flex-wrap mb-6">
         <div className="flex flex-row space-x-2">
           <div className="rounded border-2 h-10">
             <FontAwesomeIcon
-              className="px-2"
+              className="px-2 cursor-pointer"
               icon={faSearch}
               onClick={searchHandler}
             />
@@ -426,126 +426,91 @@ export default function Members() {
             />
           </div>
           <select
-            className="p-2 rounded w-[auto]"
+            className="p-2 rounded w-[auto] border-2"
             name="selectYear"
             value={searchBy}
             onChange={(e) => setSearchBy(e.target.value)}
           >
-            <option value="Welfare">Search by Welfare Number</option>
+            <option value="welfare">Search by Welfare Number</option>
             <option value="lastName">Search by Last Name</option>
             <option value="otherNames">Search by Other Names</option>
             <option value="department">Search by Department</option>
             <option value="sex">Search by Sex</option>
             <option value="dateOfBirth">Search by Date of Birth</option>
-            <option value="lastName">Search by Date of Birth</option>
             <option value="phone">Search by Phone</option>
             <option value="status">Search by Status</option>
           </select>
         </div>
 
-        {/* <input className="p-2 rounded border-2 h-10" placeholder="Search" type='text'/> */}
         <div className="flex flex-col items-center">
           <button
-            className="bg-[#8B7E74] px-2 h-10 rounded w-40  md:my-0 lg:my-0"
+            className="bg-[#8B7E74] px-4 h-10 rounded w-40 md:my-0 lg:my-0 text-white hover:bg-[#7A6E64] transition-colors duration-300"
             onClick={() => openAddMemberModal()}
           >
-            <span className="text-white text-sm">Add Member</span>
+            Add Member
           </button>
         </div>
       </div>
       {exportData && <ExportData data={exportData} />}
-      <table className="mt-10 border-separate table-auto border-spacing-y-[20px] text-[15px] w-[100%] flex-wrap text-sm">
-        <thead className="text-[#B2B2B2]">
-          <tr className="text-left">
-            <th>Profile</th>
-            <th>Welfare No.</th>
-            <th>Last Name</th>
-            <th>Other Names</th>
-            <th>Department</th>
-            <th>Sex</th>
-            <th>Date of Birth</th>
-            <th>Date of first visit</th>
-            <th>Phone</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        {memberData ? (
-          <tbody>
-            {memberData.map((data: any) => (
-              <tr
-                className="hover:bg-gray-200 cursor-pointer"
-                key={data.id}
-                onClick={() =>
-                  openViewMemberModal({
-                    id: data.id,
-                    imageUrl: data.imageUrl,
-                    welfare: data.welfare,
-                    lastName: data.lastName,
-                    otherNames: data.otherNames,
-                    address: data.address,
-                    sex: data.sex,
-                    dateOfBirth: data.dateOfBirth,
-                    nationality: data.nationality,
-                    occupation: data.occupation,
-                    phone: data.phone,
-                    hometown: data.dateOfBirth,
-                    region: data.region,
-                    residence: data.residence,
-                    maritalStatus: data.maritalStatus,
-                    department: data.department,
-                    spouseName: data.spouseName,
-                    fatherName: data.fatherName,
-                    motherName: data.motherName,
-                    childrenName: data.childrenName,
-                    nextOfKin: data.nextOfKin,
-                    nextOfKinPhone: data.nextOfKinPhone,
-                    declaration: data.declaration,
-                    dateOfFirstVisit: data.dateOfFirstVisit,
-                    dateOfBaptism: data.dateOfBaptism,
-                    membership: data.membership,
-                    dateOfTransfer: data.dateOfTransfer,
-                    officerInCharge: data.officerInCharge,
-                    officerSignatureDate: data.officerSignatureDate,
-                    headPastorSignatureDate: data.headPastorSignatureDate,
-                    status: data.status,
-                  })
-                }
-              >
-                {/* <Link href={data.imageUrl}> */}
-                <td>
-                  <Image
-                    className="rounded-full h-10 w-10"
-                    src={data.imageUrl}
-                    alt="profile"
-                    width={10}
-                    height={10}
-                  />
-                </td>
-                {/* </Link> */}
-                <td>{data.welfare}</td>
-                <td>{data.lastName}</td>
-                <td>{data.otherNames}</td>
-                <td>{data.department}</td>
-                <td>{data.sex}</td>
-                <td>{data.dateOfBirth}</td>
-                <td>{data.dateOfFirstVisit}</td>
-                <td>{data.phone}</td>
-                <td
-                  className={`${
-                    data.status == "Active" ? "text-green-600" : "text-red-600"
-                  } font-bold`}
+      
+      <div className="overflow-x-auto">
+        <table className="mt-6 w-full border-collapse table-auto text-sm">
+          <thead className="bg-gray-100">
+            <tr className="text-left">
+              <th className="p-2">Profile</th>
+              <th className="p-2">Welfare No.</th>
+              <th className="p-2">Last Name</th>
+              <th className="p-2">Other Names</th>
+              <th className="p-2">Department</th>
+              <th className="p-2">Sex</th>
+              <th className="p-2">Date of Birth</th>
+              <th className="p-2">Date of first visit</th>
+              <th className="p-2">Phone</th>
+              <th className="p-2">Status</th>
+            </tr>
+          </thead>
+          {memberData ? (
+            <tbody>
+              {memberData.map((data: any) => (
+                <tr
+                  className="hover:bg-gray-50 cursor-pointer border-b"
+                  key={data.id}
+                  onClick={() => openViewMemberModal(data)}
                 >
-                  {data.status}
+                  <td className="p-2">
+                    <Image
+                      className="rounded-full h-10 w-10 object-cover"
+                      src={data.imageUrl}
+                      alt="profile"
+                      width={40}
+                      height={40}
+                    />
+                  </td>
+                  <td className="p-2">{data.welfare}</td>
+                  <td className="p-2">{data.lastName}</td>
+                  <td className="p-2">{data.otherNames}</td>
+                  <td className="p-2">{data.department}</td>
+                  <td className="p-2">{data.sex}</td>
+                  <td className="p-2">{data.dateOfBirth}</td>
+                  <td className="p-2">{data.dateOfFirstVisit}</td>
+                  <td className="p-2">{data.phone}</td>
+                  <td className={`p-2 font-bold ${data.status === "Active" ? "text-green-600" : "text-red-600"}`}>
+                    {data.status}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          ) : (
+            <tbody>
+              <tr>
+                <td colSpan={10} className="text-center p-4 text-gray-500">
+                  Loading member data...
                 </td>
               </tr>
-            ))}
-          </tbody>
-        ) : (
-          <div className="mt-5 text-[#B2B2B2]">
-            <span>Loading member data...</span>
-          </div>
-        )}
-      </table>
+            </tbody>
+          )}
+        </table>
+      </div>
     </div>
   );
 }
