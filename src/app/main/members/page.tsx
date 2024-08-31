@@ -444,7 +444,7 @@ export default function Members() {
 
         <div className="flex flex-col items-center">
           <button
-            className="bg-[#8B7E74] px-4 h-10 rounded w-40 md:my-0 lg:my-0 text-white hover:bg-[#7A6E64] transition-colors duration-300"
+            className="bg-gold px-4 h-10 rounded w-40 md:my-0 lg:my-0 text-black hover:bg-black hover:text-white transition-colors duration-300"
             onClick={() => openAddMemberModal()}
           >
             Add Member
