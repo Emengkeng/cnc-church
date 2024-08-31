@@ -1,7 +1,7 @@
 "use client";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faTrash, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faTrash, faEdit, faPlus } from "@fortawesome/free-solid-svg-icons";
 import AddMember from "@/components/addMember/AddMember";
 import { Dialog, Transition } from "@headlessui/react";
 import { useState, Fragment, useEffect } from "react";
@@ -27,8 +27,9 @@ import {
   deleteObject,
 } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
-
 import ExportData from "@/components/exportData/ExportData";
+
+
 
 export interface viewDataInterface {
   id: string;
@@ -295,7 +296,7 @@ export default function Members() {
   }
 
   return (
-    <div className="flex flex-col justify-center py-10 md:px-40 lg:px-40 m-3 flex-wrap w-[100%]">
+    <div className={`${montserrat.variable} font-sans flex flex-col justify-center py-4 px-4 md:px-8 lg:px-16 m-2 w-full`}>
       {/* Add Member Modal */}
       <Transition appear show={isAddMemberOpen} as={Fragment}>
         <Dialog
@@ -408,45 +409,47 @@ export default function Members() {
         </Dialog>
       </Transition>
 
-      <div className="flex flex-row justify-between flex-wrap mb-6">
-        <div className="flex flex-row space-x-2">
-          <div className="rounded border-2 h-10">
-            <FontAwesomeIcon
-              className="px-2 cursor-pointer"
-              icon={faSearch}
-              onClick={searchHandler}
-            />
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+        <div className="flex flex-col w-full md:w-auto space-y-2 md:space-y-0 md:flex-row md:space-x-2">
+          <div className="flex rounded border-2 h-10">
             <input
-              className="h-full p-2"
+              className="flex-grow p-2"
               placeholder={`Search by ${searchBy}`}
               name="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               type="text"
             />
+            <button
+              className="px-3 bg-gold hover:bg-black hover:text-white transition-colors duration-300"
+              onClick={searchHandler}
+            >
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
           </div>
           <select
-            className="p-2 rounded w-[auto] border-2"
+            className="p-2 rounded w-full md:w-auto border-2"
             name="selectYear"
             value={searchBy}
             onChange={(e) => setSearchBy(e.target.value)}
           >
-            <option value="welfare">Search by Welfare Number</option>
-            <option value="lastName">Search by Last Name</option>
-            <option value="otherNames">Search by Other Names</option>
-            <option value="department">Search by Department</option>
-            <option value="sex">Search by Sex</option>
-            <option value="dateOfBirth">Search by Date of Birth</option>
-            <option value="phone">Search by Phone</option>
-            <option value="status">Search by Status</option>
+            <option value="welfare">Welfare Number</option>
+            <option value="lastName">Last Name</option>
+            <option value="otherNames">Other Names</option>
+            <option value="department">Department</option>
+            <option value="sex">Sex</option>
+            <option value="dateOfBirth">Date of Birth</option>
+            <option value="phone">Phone</option>
+            <option value="status">Status</option>
           </select>
         </div>
 
-        <div className="flex flex-col items-center">
+        <div className="flex w-full md:w-auto">
           <button
-            className="bg-[#8B7E74] px-4 h-10 rounded w-40 md:my-0 lg:my-0 text-white hover:bg-[#7A6E64] transition-colors duration-300"
+            className="bg-gold px-4 h-10 rounded w-full md:w-40 text-black hover:bg-black hover:text-white transition-colors duration-300 flex items-center justify-center"
             onClick={() => openAddMemberModal()}
           >
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Add Member
           </button>
         </div>
@@ -458,14 +461,7 @@ export default function Members() {
           <thead className="bg-gray-100">
             <tr className="text-left">
               <th className="p-2">Profile</th>
-              <th className="p-2">Welfare No.</th>
-              <th className="p-2">Last Name</th>
-              <th className="p-2">Other Names</th>
-              <th className="p-2">Department</th>
-              <th className="p-2">Sex</th>
-              <th className="p-2">Date of Birth</th>
-              <th className="p-2">Date of first visit</th>
-              <th className="p-2">Phone</th>
+              <th className="p-2">Details</th>
               <th className="p-2">Status</th>
             </tr>
           </thead>
@@ -486,14 +482,11 @@ export default function Members() {
                       height={40}
                     />
                   </td>
-                  <td className="p-2">{data.welfare}</td>
-                  <td className="p-2">{data.lastName}</td>
-                  <td className="p-2">{data.otherNames}</td>
-                  <td className="p-2">{data.department}</td>
-                  <td className="p-2">{data.sex}</td>
-                  <td className="p-2">{data.dateOfBirth}</td>
-                  <td className="p-2">{data.dateOfFirstVisit}</td>
-                  <td className="p-2">{data.phone}</td>
+                  <td className="p-2">
+                    <div className="font-semibold">{`${data.lastName}, ${data.otherNames}`}</div>
+                    <div className="text-xs text-gray-600">{`${data.department} | ${data.phone}`}</div>
+                    <div className="text-xs text-gray-500">{`Welfare: ${data.welfare}`}</div>
+                  </td>
                   <td className={`p-2 font-bold ${data.status === "Active" ? "text-green-600" : "text-red-600"}`}>
                     {data.status}
                   </td>
@@ -503,7 +496,7 @@ export default function Members() {
           ) : (
             <tbody>
               <tr>
-                <td colSpan={10} className="text-center p-4 text-gray-500">
+                <td colSpan={3} className="text-center p-4 text-gray-500">
                   Loading member data...
                 </td>
               </tr>

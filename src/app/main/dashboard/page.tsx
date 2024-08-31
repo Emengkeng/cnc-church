@@ -170,9 +170,9 @@ export default function Dashboard() {
         const totalTithe = setTitheCount(newChurchData.tithe.reduce((a, b) => a + b, 0));
 
         console.log('Total Members:', totalMembers);
-        console.log('Total Offering:', totalOffering);
-        console.log('Total Contribution:', totalContribution);
-        console.log('Total Tithe:', totalTithe);
+        //console.log('Total Offering:', totalOffering);
+        //console.log('Total Contribution:', totalContribution);
+        //console.log('Total Tithe:', totalTithe);
       } catch (error) {
         console.error("Error fetching data: ", error);
       } finally {
