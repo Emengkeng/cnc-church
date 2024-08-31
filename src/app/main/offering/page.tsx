@@ -221,7 +221,7 @@ export default function Offering() {
       </Transition>
 
       <button
-        className="text-white p-2 h-10 rounded w-40 bg-[#8B7E74]"
+        className="bg-gold px-4 h-10 rounded w-full md:w-40 text-black hover:bg-black hover:text-white transition-colors duration-300 flex items-center justify-center"
         onClick={() => setIsOpen(true)}
       >
         Add Offering

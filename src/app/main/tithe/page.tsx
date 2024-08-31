@@ -291,7 +291,7 @@ export default function Tithe() {
         </div>
         {/* <input className="p-2 rounded border-2 h-10" placeholder="Search" type='text'/> */}
         <button
-          className="text-white p-2 h-10 rounded md:my-0 lg:my-0 my-3 w-40 bg-[#8B7E74]"
+          className="bg-gold px-4 h-10 rounded w-full md:w-40 text-black hover:bg-black hover:text-white transition-colors duration-300 flex items-center justify-center"
           onClick={() => setIsOpen(true)}
         >
           Add Tithe
